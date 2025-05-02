@@ -7356,3 +7356,22 @@ JOIN [library].[dbo].[Estudiantes] AS Est ON Pres.[studentId] = Est.[studentId]
 JOIN [library].[dbo].[Libros] AS Lib ON Pres.[bookId] = Lib.[bookId]
 WHERE MONTH([DiaCompra]) = 8
 ORDER BY [borrowId];
+
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+8) Informar todos los Estudiantes que nunda han realizado un prestamo. (Pueden utilizar 
+Subconsulta o LEFT JOIN)
+---------------------------------------------------------------------------------*/
+SELECT Est.[studentId]
+      ,[Nombre]
+	  ,[Apellido]
+	  ,[FechaNacimiento]
+	  ,[Genero]
+	  ,[Clase]
+	  ,[Punto]
+FROM [library].[dbo].Estudiantes AS Est
+LEFT JOIN [library].[dbo].Prestamos AS Pres
+         ON Est.studentId = Pres.studentId
+WHERE [DiaPrestamo] IS NULL;
+
