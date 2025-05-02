@@ -7425,3 +7425,85 @@ SET [DiaPrestamo] = DATEADD(YEAR,5,[DiaPrestamo])
 
 SELECT*
 FROM [library].[dbo].[Prestamos];
+
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+ 12) Luego de la actualización realizada en el punto 11 realizar una consulta que 
+informe el tiempo promedio de préstamo por tipo de libro, 
+solo de aquellos tipos de libros cuyo promedio supera los 70 dias.
+---------------------------------------------------------------------------------*/
+
+SELECT [DescripcionTipo],
+       AVG(DATEDIFF(DAY, pres.[DiaCompra], GETDATE())) AS Dias
+FROM [dbo].[Prestamos] pres
+JOIN  [dbo].[Libros] lib ON pres.[bookId] = lib.[bookId]
+JOIN [dbo].[Tipos] tip ON lib.[typeId] = tip.[typeId]
+GROUP BY tip.[DescripcionTipo]
+HAVING AVG(DATEDIFF(day, pres.[DiaCompra], GETDATE())) > 70;
+
+
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+ 13) Informar el top 5 de los autores más prestados. 
+---------------------------------------------------------------------------------*/
+SELECT TOP (5)
+	Aut.[authorId],
+	CONCAT([Nombre],' ',[Apellido]) AS [Nombre_Apellido],
+	COUNT(Pres.[bookId]) AS [Cantidad]
+FROM [library].[dbo].[Autores] AS Aut
+INNER JOIN [library].[dbo].[Libros] AS Lib ON Lib.[authorId] = Aut.[authorId]
+INNER JOIN [library].[dbo].[Prestamos] AS Pres ON Pres.[bookId] = Lib.[bookId]
+GROUP BY Aut.[authorId], CONCAT([Nombre],' ',[Apellido])
+ORDER BY [Cantidad] DESC;
+
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+ 14) A partir de la consulta del punto 8 realizar una vista llamada 
+ vw_EstudiantesSinPrestamos
+---------------------------------------------------------------------------------*/
+USE [library]
+GO
+
+CREATE VIEW vw_EstudiantesSinPrestamos AS
+SELECT Est.[studentId]
+      ,[Nombre]
+	  ,[Apellido]
+	  ,[FechaNacimiento]
+	  ,[Genero]
+	  ,[Clase]
+	  ,[Punto]
+FROM Estudiantes AS Est
+LEFT JOIN Prestamos AS Pres
+         ON Est.studentId = Pres.studentId
+WHERE [DiaPrestamo] IS NULL;
+
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+15) A partir de la consulta del punto 7 realizar un procedimiento almacenado que 
+reciba como parámetro el mes a consulta.
+---------------------------------------------------------------------------------*/
+USE [library]
+GO
+
+CREATE PROCEDURE [dbo].[usp_PrestamosMes] @pin_Mes INT
+AS
+SELECT
+	Pres.[borrowId],
+	Pres.[studentID],
+	CONCAT([Apellido], ' ',[Nombre]) as [Apellido Y Nombre],
+	Pres.[bookId],
+	Lib.[NombreLibro],
+	DATEDIFF(DAY,[DiaPrestamo],GETDATE()) AS CantDias,
+	DATENAME(MONTH, [DiaCompra]) AS Mes
+FROM [library].[dbo].[Prestamos] AS Pres
+JOIN [library].[dbo].[Estudiantes] AS Est ON Pres.[studentId] = Est.[studentId]
+JOIN [library].[dbo].[Libros] AS Lib ON Pres.[bookId] = Lib.[bookId]
+WHERE MONTH([DiaCompra]) = @pin_Mes
+ORDER BY [borrowId];
+
+EXEC [dbo].[usp_PrestamosMes] 8;
+
