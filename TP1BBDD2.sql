@@ -7315,3 +7315,44 @@ ORDER BY [FechaNacimiento] ASC;
 tengan el mismo valor en la columna de ordenamiento que la última fila incluida. 
 De esta forma, si el 4º registro empata en fecha con otros, se devolverán 
 también esos registros.*/
+
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+6) Informar los Prestamos (borrowId,studentId,bookId, * CantDias) *Cantidad de días quellevan 
+prestados los libros.
+---------------------------------------------------------------------------------*/
+
+SELECT 
+	[borrowId],
+	[studentId],
+	[bookId],
+	[DiaPrestamo],
+	DATEDIFF(DAY,[DiaPrestamo],GETDATE()) AS CantDias
+FROM [library].[dbo].[Prestamos];
+
+
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+7) Informar los Prestamos (borrowId, studentId, Nombre y Apellido del estudiante, 
+bookId,NombreLibro, * CantDias) 
+*Cantidad de días que llevan prestados los libros, de aquellos libros comprados en 
+el mes de agosto
+-Investigar Funciones: DATEDIFF ( datepart , startdate , enddate ), MONTH ( Date 
+Expression) 
+-Realizar JOINS necesarios 
+---------------------------------------------------------------------------------*/
+SELECT
+	Pres.[borrowId],
+	Pres.[studentID],
+	CONCAT([Apellido], ' ',[Nombre]) as [Apellido Y Nombre],
+	Pres.[bookId],
+	Lib.[NombreLibro],
+	DATEDIFF(DAY,[DiaPrestamo],GETDATE()) AS CantDias,
+	DATENAME(MONTH, [DiaCompra]) AS Mes
+FROM [library].[dbo].[Prestamos] AS Pres
+JOIN [library].[dbo].[Estudiantes] AS Est ON Pres.[studentId] = Est.[studentId]
+JOIN [library].[dbo].[Libros] AS Lib ON Pres.[bookId] = Lib.[bookId]
+WHERE MONTH([DiaCompra]) = 8
+ORDER BY [borrowId];
