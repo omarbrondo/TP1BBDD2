@@ -7248,17 +7248,70 @@ SET IDENTITY_INSERT [dbo].[Prestamos] OFF
 /*---------------------------------------------------------------------------------*/
 
 
-/*2) Agregar estas restricciones al modelo ya creado 
-Investigar por ejemplo : ALTER TABLE table_name ADD CONSTRAINT 
+
+
+
+/*---------------------------------------------------------------------------------
+2) Agregar estas restricciones al modelo ya creado 
+---------------------------------------------------------------------------------*/
+/*Investigar por ejemplo : ALTER TABLE table_name ADD CONSTRAINT 
 MyUniqueConstraint CHECK (CONDITION); 
 
 La condicion establece ciertas restricciones del tipo CHECK que revisa que una condicion cumpla alguna instruccion
-o validacion al insertar o actualizar datos
+o validacion al insertar o actualizar datos*/
 
-
-2.1 
-Incorporar la restricción CHECK sobre la tabla Libros, columna cantidad de 
+/*---------------------------------------------------------------------------------
+2.1 Incorporar la restricción CHECK sobre la tabla Libros, columna cantidad de 
 páginas para incorporar solo números >0*/
+---------------------------------------------------------------------------------*/
 
 ALTER TABLE [library].[dbo].[Libros] ADD CONSTRAINT [CHK_CantPaginas] CHECK ([CantPaginas] > 0);
 
+/*---------------------------------------------------------------------------------
+2.2) Incorporar la restricción Default sobre la tabla Libros, columna puntos con el valor (1)
+---------------------------------------------------------------------------------*/
+
+ALTER TABLE [library].[dbo].[Libros] ADD CONSTRAINT [DF_Puntos] DEFAULT 1 FOR [Punto];
+
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+3) Listar los Libros (nombres y cantidad de páginas) ordenado por la cantidad de páginas descendentes
+---------------------------------------------------------------------------------*/
+SELECT
+	[NombreLibro], 
+	[CantPaginas]
+FROM [library].[dbo].[Libros]
+ORDER BY [CantPaginas] DESC;
+
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+ 4) Obtener los primeros 4 Estudiantes (StudentId, Nombre+Apellido, fecha de Nacimiento) ordenado por fecha de nacimiento ascendente
+---------------------------------------------------------------------------------*/
+SELECT TOP(4) 
+	[studentId],
+	[Nombre],
+	[Apellido],
+	[FechaNacimiento]
+FROM [library].[dbo].[Estudiantes]
+ORDER BY FechaNacimiento ASC;
+
+
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+5) Luego ejecutar la misma consulta con la cláusula WITH TIES y explicar brevemente que es lo que puede verificar
+---------------------------------------------------------------------------------*/
+SELECT TOP(4) WITH TIES  
+	[studentId], 
+	[Nombre], 
+	[Apellido], 
+	[FechaNacimiento]
+FROM [library].[dbo].[Estudiantes]
+ORDER BY [FechaNacimiento] ASC;
+
+/*La cláusula WITH TIES incluye, además de las 4 primeras filas, todas aquellas que 
+tengan el mismo valor en la columna de ordenamiento que la última fila incluida. 
+De esta forma, si el 4º registro empata en fecha con otros, se devolverán 
+también esos registros.*/
