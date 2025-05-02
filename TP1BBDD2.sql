@@ -7375,3 +7375,53 @@ LEFT JOIN [library].[dbo].Prestamos AS Pres
          ON Est.studentId = Pres.studentId
 WHERE [DiaPrestamo] IS NULL;
 
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+9.1) Insertar dos nuevos Estudiante con valores seleccionados por usted.
+---------------------------------------------------------------------------------*/
+INSERT [library].[dbo].[Estudiantes]([Nombre],[Apellido],[FechaNacimiento],[Genero],[Clase],[Punto])
+VALUES ('Omar','Brondo','19851028','M','4B',265);
+
+INSERT [library].[dbo].[Estudiantes]([Nombre],[Apellido],[FechaNacimiento],[Genero],[Clase],[Punto])
+VALUES ('Barbara','Carrizo','19870518','F','13A',957);
+
+/* 9.2) Luego Re-Ejecutar la consulta del punto 8 y realizar una breve concusión del resultado obtenido*/
+SELECT Est.[studentId]
+      ,[Nombre]
+	  ,[Apellido]
+	  ,[FechaNacimiento]
+	  ,[Genero]
+	  ,[Clase]
+	  ,[Punto]
+FROM [library].[dbo].Estudiantes AS Est
+LEFT JOIN [library].[dbo].Prestamos AS Pre 
+         ON Est.studentId = Pre.studentId
+WHERE [DiaPrestamo] IS NULL;
+/* La primera vez que se realizo la consulta arrojaba un solo resultado.
+Luego de agregar nuevos estudiantes la consulta arroja mas resultados ya que fueron dados de alta recientemente,
+por lo tanto son estudiantes que no han tenido la oportunidad de realizar un prestamo aún*/
+
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+ 10) Realizar una copia derivada desde la tabla Estudiantes llamada Estudiantes_cpy. 
+ Utilizar la sentencia SELECT INTO o INSERT SELECT
+---------------------------------------------------------------------------------*/
+
+DROP TABLE IF EXISTS [library].[dbo].[Estudiantes_cpy]
+SELECT * INTO [library].[dbo].[Estudiantes_cpy]
+FROM [library].[dbo].[Estudiantes];
+
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+  11) Realizar la actualización y corrección de préstamo (DiaPrestamo) 
+ incrementando en 5 la cantidad de años.
+---------------------------------------------------------------------------------*/
+
+UPDATE [library].[dbo].[Prestamos]
+SET [DiaPrestamo] = DATEADD(YEAR,5,[DiaPrestamo])
+
+SELECT*
+FROM [library].[dbo].[Prestamos];
