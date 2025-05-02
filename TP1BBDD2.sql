@@ -7507,3 +7507,34 @@ ORDER BY [borrowId];
 
 EXEC [dbo].[usp_PrestamosMes] 8;
 
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+16) Realizar un procedimiento almacenado que reciba como parámetro el género, la clase 
+y fecha de préstamo desde y hasta. 
+Deberá informar estudiantes que hayan concretado prestamos y que cumplan con las 
+condiciones que reciba como parámetro.
+El procedimiento deberá informar Nombre y apellido del estudiante, Libro y fecha 
+en que se le prestó.
+---------------------------------------------------------------------------------*/
+
+USE [library]
+GO
+
+CREATE PROCEDURE [dbo].[usp_PrestamosEstudiantes] 
+	@p_Genero varchar(10), @p_Clase varchar(7), @p_FechaDesde DATETIME, @p_FechaHasta DATETIME
+AS
+SELECT [Nombre]
+	  ,[Apellido]
+	  ,[NombreLibro]
+	  ,[DiaPrestamo]
+FROM [dbo].[Estudiantes] AS Est
+INNER JOIN [dbo].[Prestamos] AS Pre ON Pre.[studentId] = Est.[studentId]
+INNER JOIN [dbo].[Libros] AS Lib On Lib.[bookId] = Pre.[bookId]
+WHERE @p_Genero = Est.[Genero]
+	AND @p_Clase = Est.[Clase]
+	AND Pre.[DiaPrestamo] BETWEEN @p_FechaDesde AND @p_FechaHasta
+
+EXEC [dbo].[usp_PrestamosEstudiantes] 'F', '11B', '20200101','20201231'
+
+
