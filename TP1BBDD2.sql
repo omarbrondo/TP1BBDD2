@@ -7538,3 +7538,144 @@ WHERE @p_Genero = Est.[Genero]
 EXEC [dbo].[usp_PrestamosEstudiantes] 'F', '11B', '20200101','20201231'
 
 
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+17) Crear una función llamada udf_EdadEstudiante que reciba como parámetros la el 
+studentId y retorne la edad.
+---------------------------------------------------------------------------------*/
+USE [library]
+GO
+CREATE FUNCTION [dbo].[udf_EdadEstudiante] (@studentId INT)
+RETURNS INT
+AS
+BEGIN
+	DECLARE @fecha DATETIME;
+	SELECT @fecha = [FechaNacimiento]
+	FROM [library].[dbo].[Estudiantes]
+	WHERE [studentId] = @studentId
+	RETURN DATEDIFF(YEAR,@fecha,GETDATE())
+END
+
+--LUEGO CONSULTAR
+SELECT [studentId]
+	  ,CONCAT([Nombre], ' ',[Apellido]) AS [NombreApellido]
+	  ,[library].[dbo].[udf_EdadEstudiante]([studentId]) AS Edad
+FROM Estudiantes
+
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+18) Eliminar el Tipo de Libro identificado con el typeId = 1. Explicar cuál es el 
+resultado de esta instrucción, que mensaje retorna y por qué.
+---------------------------------------------------------------------------------*/
+DELETE FROM [NewLibrary].[dbo].[Tipos] WHERE typeId = 1
+
+/*Si existen registros en la tabla Libros que hacen referencia al typeld = 1 
+(debido a la clave foránea) y no se ha definido una acción CASCADE en la restricción, 
+el motor de la base de datos impedirá la eliminación y retornará un error similar a:
+"The DELETE statement conflicted with the REFERENCE constraint 'FK_Libros_Tipos'. 
+The conflict occurred in database …"
+
+Esto asegura la integridad referencial, evitando que se queden registros huérfanos 
+en la tabla Libros.*/
+
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+19) Ejecutar la consulta del punto 8 insertando e informando el resultado desde una CTE.
+---------------------------------------------------------------------------------*/
+USE [library]
+GO
+
+WITH CTE_EstudiantesSinPrestamos
+AS 
+(
+	SELECT Est.[studentId]
+		  ,[Nombre]
+		  ,[Apellido]
+		  ,[FechaNacimiento]
+		  ,[Genero]
+		  ,[Clase]
+		  ,[Punto]
+	FROM [library].[dbo].Estudiantes AS Est
+	LEFT JOIN [library].[dbo].Prestamos AS Pres
+			 ON Est.studentId = Pres.studentId
+	WHERE [DiaPrestamo] IS NULL
+)
+SELECT* FROM CTE_EstudiantesSinPrestamos;
+
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+20) Investigar qué forma hay de emular un order by en un view. Este view da error. 
+Solucionarlo.
+---------------------------------------------------------------------------------*/
+USE [library]
+GO
+
+CREATE VIEW vw_Libros_Grandes 
+AS 
+SELECT TOP 100 PERCENT [bookId] 
+	,[NombreLibro] 
+	,[CantPaginas] 
+FROM [NewLibrary].[dbo].[Libros] 
+WHERE [CantPaginas] >300 
+ORDER BY CantPaginas
+
+/* La clausula TOP siempre va acompañada de ORDER BY, por lo tanto, al usar TOP podemos 
+ordenar los datos en una vista.
+Con PERCENT determinamos que porcentaje de los registros queremos ver, 
+al determinar 100 PERCENT traemos la totalidad de registros ordenados*/
+
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+21) Escribir un script simple que cree dos variables de tipo enteras 
+(una llamada cantM y otra llamada cantF), 
+y les asigne los valores de la cantidad de Estudiantes Masculinos y femeninos respectivamente.
+Luego informar por pantalla que genero tiene mas alumnos.
+---------------------------------------------------------------------------------*/
+DECLARE @cantM INT
+DECLARE @cantF INT
+
+SELECT @cantM = COUNT(*) 
+FROM [library].[dbo].[Estudiantes] 
+WHERE Genero = 'M'
+
+SELECT @cantF = COUNT(*) 
+FROM [library].[dbo].[Estudiantes] 
+WHERE Genero = 'F'
+
+IF (@cantM > @cantF)
+BEGIN
+     SELECT 'Hay mas alumnos masculinos' AS Mensaje
+END
+ELSE
+BEGIN
+     SELECT 'Hay mas alumnos femeninos' AS Mensaje
+END
+
+SELECT @cantM AS Masculinos , @cantF AS Femeninos
+
+/*---------------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------------
+22) Informar de cada libro cual fue el primer estudiante que lo pidio y la fecha. 
+---------------------------------------------------------------------------------*/
+SELECT 
+	[NombreLibro]
+	,[ApellidoNombre]
+	,[DiaPrestamo]
+FROM
+	(SELECT	[NombreLibro]
+			,CONCAT([Apellido],' ',[Nombre]) AS [ApellidoNombre]
+			,[DiaPrestamo]
+			,ROW_NUMBER() OVER(PARTITION BY Lib.[bookID] 
+			ORDER BY [DiaPrestamo] ASC) as [ordenPrestamo]
+	FROM [library].[dbo].Libros AS Lib
+	INNER JOIN [library].[dbo].[Prestamos] AS Pre ON Pre.[bookId] = Lib.[bookId]
+	INNER JOIN [library].[dbo].[Estudiantes] AS Est ON Est.[studentId] = Pre.[studentId]) AS Prestaamos_ROW_NUMBER
+WHERE [ordenPrestamo] = 1
+
+
