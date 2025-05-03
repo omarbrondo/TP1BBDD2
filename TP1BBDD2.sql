@@ -7569,7 +7569,7 @@ FROM Estudiantes
 18) Eliminar el Tipo de Libro identificado con el typeId = 1. Explicar cuál es el 
 resultado de esta instrucción, que mensaje retorna y por qué.
 ---------------------------------------------------------------------------------*/
-DELETE FROM [NewLibrary].[dbo].[Tipos] WHERE typeId = 1
+DELETE FROM [library].[dbo].[Tipos] WHERE typeId = 1
 
 /*Si existen registros en la tabla Libros que hacen referencia al typeld = 1 
 (debido a la clave foránea) y no se ha definido una acción CASCADE en la restricción, 
@@ -7619,9 +7619,12 @@ AS
 SELECT TOP 100 PERCENT [bookId] 
 	,[NombreLibro] 
 	,[CantPaginas] 
-FROM [NewLibrary].[dbo].[Libros] 
+FROM [library].[dbo].[Libros] 
 WHERE [CantPaginas] >300 
 ORDER BY CantPaginas
+
+
+
 
 /* La clausula TOP siempre va acompañada de ORDER BY, por lo tanto, al usar TOP podemos 
 ordenar los datos en una vista.
